@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Project>
+  <Desktop>
+    <Static>
+      <Debug-Log>
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1861</ColumnWidth1></Debug-Log>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1395</ColumnWidth1><ColumnWidth2>372</ColumnWidth2><ColumnWidth3>93</ColumnWidth3></Build>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>79</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Disassembly>
+        
+        
+        
+      <PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><MixedMode>1</MixedMode><CodeCovShow>0</CodeCovShow><InstrProfShow>0</InstrProfShow></Disassembly>
+    <Watch><Format><struct_types><Fmt><Key>basicRfRxInfo_t-rssi</Key><Value>3</Value></Fmt></struct_types><watch_formats><Fmt><Key>{W}Watch-0:getRSSI</Key><Value>1</Value></Fmt><Fmt><Key>{W}Watch-0:status</Key><Value>3</Value></Fmt></watch_formats></Format><Column0>100</Column0><Column1>100</Column1><Column2>100</Column2><Column3>100</Column3></Watch></Static>
+    <Windows>
+      
+      
+      
+    <Wnd0>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-2733-26442</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-2210-26452</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd3>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-13481-26446</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>dongle</ExpandedNode><ExpandedNode>dongle/hal</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd3><Wnd4><Tabs><Tab><Identity>TabID-31744-8055</Identity><TabName>Watch</TabName><Factory>Watch</Factory><Session><Expressions><Expression><Expression>basicRfPacketIsReady</Expression></Expression><Expression><Expression>pRxData</Expression></Expression><Expression><Expression>rxi</Expression></Expression><Expression><Expression>bob</Expression></Expression><Expression><Expression>pTxData</Expression></Expression><Expression><Expression>ACK</Expression></Expression><Expression><Expression>status</Expression></Expression><Expression><Expression>pPayload</Expression></Expression><Expression><Expression>getRSSI</Expression></Expression></Expressions><TabId>0</TabId><Column0>100</Column0><Column1>100</Column1><Column2>100</Column2><Column3>100</Column3></Session></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd4><Wnd5><Tabs><Tab><Identity>TabID-25577-13113</Identity><TabName>Disassembly</TabName><Factory>Disassembly</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd5></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\basicrf\basic_rf.h</Filename><XPos>0</XPos><YPos>64</YPos><SelStart>2415</SelStart><SelEnd>2415</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\targets\srf05_soc\hal_board.h</Filename><XPos>0</XPos><YPos>67</YPos><SelStart>1776</SelStart><SelEnd>1776</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\radios\cc2530\adc.c</Filename><XPos>0</XPos><YPos>20</YPos><SelStart>1076</SelStart><SelEnd>1076</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\targets\srf05_soc\hal_led.c</Filename><XPos>0</XPos><YPos>65</YPos><SelStart>1854</SelStart><SelEnd>1854</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\targets\srf05_soc\hal_joystick.c</Filename><XPos>0</XPos><YPos>173</YPos><SelStart>5821</SelStart><SelEnd>5821</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\targets\srf05_soc\hal_board.c</Filename><XPos>0</XPos><YPos>37</YPos><SelStart>1583</SelStart><SelEnd>1583</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\common\cc8051\hal_cc8051.h</Filename><XPos>0</XPos><YPos>28</YPos><SelStart>1784</SelStart><SelEnd>1784</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\radios\cc2530\hal_mcu.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>1411</SelStart><SelEnd>1411</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\apps\light_switch\light_switch.c</Filename><XPos>0</XPos><YPos>100</YPos><SelStart>3315</SelStart><SelEnd>3315</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\common\hal_defs.h</Filename><XPos>0</XPos><YPos>9</YPos><SelStart>507</SelStart><SelEnd>507</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\common\hal_types.h</Filename><XPos>0</XPos><YPos>71</YPos><SelStart>1766</SelStart><SelEnd>1766</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\apps\pressure_sensor\dongle.c</Filename><XPos>0</XPos><YPos>94</YPos><SelStart>2613</SelStart><SelEnd>2613</SelEnd></Tab><ActiveTab>11</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\apps\pressure_sensor\robot.c</Filename><XPos>0</XPos><YPos>126</YPos><SelStart>3900</SelStart><SelEnd>3900</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\radios\cc2530\hal_rf.c</Filename><XPos>0</XPos><YPos>436</YPos><SelStart>10692</SelStart><SelEnd>10692</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\source\Components\basicrf\basic_rf.c</Filename><XPos>0</XPos><YPos>105</YPos><SelStart>4016</SelStart><SelEnd>4016</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-012b6d28><key>iaridepm.enu1</key></Toolbar-012b6d28></Sizes></Row0><Row1><Sizes><Toolbar-0a6de830><key>debuggergui.enu1</key></Toolbar-0a6de830></Sizes></Row1><Row2><Sizes/></Row2></Top><Left><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>707</Bottom><Right>153</Right><x>-2</x><y>-2</y><xscreen>165</xscreen><yscreen>208</yscreen><sizeHorzCX>174788</sizeHorzCX><sizeHorzCY>211813</sizeHorzCY><sizeVertCX>164195</sizeVertCX><sizeVertCY>721996</sizeVertCY></Rect></Wnd3></Sizes></Row0></Left><Right><Row0><Sizes><Wnd4><Rect><Top>-2</Top><Left>-2</Left><Bottom>707</Bottom><Right>276</Right><x>-2</x><y>-2</y><xscreen>165</xscreen><yscreen>208</yscreen><sizeHorzCX>174788</sizeHorzCX><sizeHorzCY>211813</sizeHorzCY><sizeVertCX>294492</sizeVertCX><sizeVertCY>721996</sizeVertCY></Rect></Wnd4></Sizes></Row0><Row1><Sizes><Wnd5><Rect><Top>-2</Top><Left>274</Left><Bottom>707</Bottom><Right>516</Right><x>274</x><y>-2</y><xscreen>242</xscreen><yscreen>192</yscreen><sizeHorzCX>256356</sizeHorzCX><sizeHorzCY>195519</sizeHorzCY><sizeVertCX>256356</sizeVertCX><sizeVertCY>721996</sizeVertCY></Rect></Wnd5></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>206</Bottom><Right>946</Right><x>-2</x><y>-2</y><xscreen>948</xscreen><yscreen>208</yscreen><sizeHorzCX>1004237</sizeHorzCX><sizeHorzCY>211813</sizeHorzCY><sizeVertCX>174788</sizeVertCX><sizeVertCY>211813</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Project>
+
+
