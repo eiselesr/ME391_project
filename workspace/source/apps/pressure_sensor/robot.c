@@ -70,11 +70,11 @@ WIRELESS ROBOTIC SYSTEM FILE --- LOAD ONTO CC2530 RFB 743
 #define SPI 1
 
 #define CS_1 P1_4 // CHIP SELECT FOR PRESSURE CENSOR
-#define CS_2 P1_4 // CHIP SELECT FOR PRESSURE CENSOR
-#define CS_3 P1_4 // CHIP SELECT FOR PRESSURE CENSOR
-#define CS_4 P1_4 // CHIP SELECT FOR PRESSURE CENSOR
-#define CS_A P1_4 // CHIP SELECT FOR ACCELEROMETER
-#define CS_G P1_4 // CHIP SELECT FOR GYROSCOPE
+#define CS_2 P1_3 // CHIP SELECT FOR PRESSURE CENSOR
+#define CS_3 P0_5 // CHIP SELECT FOR PRESSURE CENSOR
+#define CS_4 P0_4 // CHIP SELECT FOR PRESSURE CENSOR
+#define CS_A P0_1 // CHIP SELECT FOR ACCELEROMETER
+#define CS_G P0_0 // CHIP SELECT FOR GYROSCOPE
 
 #define a0_MSB 0x88 //Coefficient addresses (Read built in)
 #define a0_LSB 0x8A
@@ -201,6 +201,7 @@ void main(void)
   }
   halMcuWaitMs(350);
   configurePressure();
+  //configureIMU();
   
   basicRfReceiveOn();
   
@@ -320,7 +321,7 @@ static void configurePressure()
     
     
     //Read coefficients
-    // *CS = 0;
+    //CS_1 = 0;
     turnOffCS(sensorNum);
     //I (Eric) have this set up to send one coeffBuf containing info for all 4 sensors
     for(int i=0; i<9; i++)
@@ -332,10 +333,11 @@ static void configurePressure()
       U1TX_BYTE = 0; 
       U1DBUF = 0x00;
       while (!U1TX_BYTE);    
-      coeffBuf[i+3+9*sensorNum] = U1DBUF;    
+      coeffBuf[i+3+8*sensorNum] = U1DBUF;    
+      //coeffBuf[i+3] = U1DBUF;  
     } 
     turnOnCS(sensorNum);
-    //*CS = 1;
+    //CS_1 = 1;
     
   }
 }
@@ -364,7 +366,7 @@ static void readPressure()
     
     
     turnOffCS(sensorNum);
-    //CS=0;
+    //CS_1=0;
     //Start Measuring Pressure
     U1TX_BYTE = 0;
     U1DBUF = START;
@@ -374,7 +376,7 @@ static void readPressure()
     U1DBUF = 0x00;
     while (!U1TX_BYTE);    
     turnOnCS(sensorNum);
-    //CS=1;
+    //CS_1=1;
     
     halMcuWaitMs(3);//Wait for conversion
     
@@ -385,7 +387,7 @@ static void readPressure()
     spiTxBuffer[3] = Tadc_LSB;
     spiTxBuffer[4] = 0x00;
     
-    //CS = 0;
+    //CS_1= 0;
     turnOffCS(sensorNum);
     for(int i=0; i<5; i++)
     {
@@ -397,11 +399,12 @@ static void readPressure()
       U1TX_BYTE = 0; 
       U1DBUF = 0x00;
       while (!U1TX_BYTE);    
-      spiRxBuffer_Pressure[i+5*sensorNum] = U1DBUF;
+      spiRxBuffer_Pressure[i+4*sensorNum] = U1DBUF;
+      //spiRxBuffer_Pressure[i] = U1DBUF;
       
     }
     turnOnCS(sensorNum);
-    //CS = 1;
+    //CS_1 = 1;
     
   }//end iterating loop
 }
@@ -412,29 +415,26 @@ static void readPressure()
 uint8 sendPressure()
 {  
   uint8 status = FAILED;// FAILED = 1
-  //int i = 0;
-  // while(i<5)
-  {
-    pTxData[0] = 'P'; //P => Pressure data
-    pTxData[1] = spiPkg/256;
-    pTxData[2] = spiPkg%256;
-    for(int sensorNum=0; sensorNum<numPressureSensors; sensorNum++){
-      
-      //Only 4 values are sent for each sensor, but we stored 5 (one extra for junk)
-      //This is why sensorNum is multiplied by different numbers.
-      pTxData[3+sensorNum*4] = spiRxBuffer_Pressure[0+sensorNum*5];
-      pTxData[4+sensorNum*4] = spiRxBuffer_Pressure[1+sensorNum*5];
-      pTxData[5+sensorNum*4] = spiRxBuffer_Pressure[2+sensorNum*5];
-      pTxData[6+sensorNum*4] = spiRxBuffer_Pressure[3+sensorNum*5];
-    }
-    pTxData[102] = rssiPow;
+  pTxData[0] = 'P'; //P => Pressure data
+  pTxData[1] = spiPkg/256;
+  pTxData[2] = spiPkg%256;
+  for(int sensorNum=0; sensorNum<numPressureSensors; sensorNum++){
     
-    status = basicRfSendPacket(DONGLE_ADDR, pTxData, APP_PAYLOAD_LENGTH);
-    spiPkg++;
-    // i++;
-    if(status == SUCCESS){
-      //  break;
-    }
+    pTxData[3+sensorNum*4] = spiRxBuffer_Pressure[0+sensorNum*4];
+    pTxData[4+sensorNum*4] = spiRxBuffer_Pressure[1+sensorNum*4];
+    pTxData[5+sensorNum*4] = spiRxBuffer_Pressure[2+sensorNum*4];
+    pTxData[6+sensorNum*4] = spiRxBuffer_Pressure[3+sensorNum*4];
+    //      pTxData[3] = spiRxBuffer_Pressure[0];
+    //      pTxData[4] = spiRxBuffer_Pressure[1];
+    //      pTxData[5] = spiRxBuffer_Pressure[2];
+    //      pTxData[6] = spiRxBuffer_Pressure[3];
+  }
+  pTxData[102] = rssiPow;
+  
+  status = basicRfSendPacket(DONGLE_ADDR, pTxData, APP_PAYLOAD_LENGTH);
+  spiPkg++;
+  if(status == SUCCESS){
+    //  break;
   }
   return status;  
 }
@@ -597,15 +597,14 @@ void configureStuff()
   //-------------------------------------------------------------------------
   // TEST
   //-------------------------------------------------------------------------
-  P1SEL &= ~ 0x01;  
-  P1DIR |= 0x01;
-  P1_0=1;
+//  P1SEL &= ~ 0x01;  
+//  P1DIR |= 0x01;
+//  P1_0=1;
   //-------------------------------------------------------------------------
-  // CONFIGURE ADC 5, 6, and 7
+  // CONFIGURE Chip Selects(Port 0 Pin 5,4,1,0)
   //-------------------------------------------------------------------------
-  P0SEL |=  0x13;//SET P0_7, 6, 5 to peripheral [---1 --11]
-  P0DIR &= ~0x13;//SET P0_7, 6, 5 to input [---0  --00]
-  APCFG |= 0x13;// Analog Peripheral I/O enable [---1 --11] pg.85, 134  
+  P0SEL &=  ~0x33;//SET Pins to I/O [--00 --00]
+  P0DIR |= 0x33;//SET Pins to output [--11  --11]
   
   //--------------------------------------------------------------------------
   // CONFIGURE SPI (USART 1 ALT 2)
@@ -617,7 +616,7 @@ void configureStuff()
   // CONFIGURE SPI PERIPHERALS
   //-----------------------------------------------------  
   P1SEL |=0xE0; //set P1_5, P1_6, P1_7 are peripherals [111- ----]
-  P1SEL &= ~0x1F;  //P1_4(CS),3(SDN),2(GROUND),1(VDD) are GP I/O (SSN) [---0 0000]
+  P1SEL &= ~0x1F;  //P1_4(CS_1),3(CS_2),2(GROUND),1(VDD) are GP I/O (SSN) [---0 0000]
   P1DIR = 0x7F; // SET MO, C, CS, VDD, GND, SDN to output [0111 1111]
   //P1DIR &=~0x80; //SET MI to input[0--- ----]
   //-----------------------------------------------------

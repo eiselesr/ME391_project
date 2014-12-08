@@ -212,28 +212,28 @@ _Pragma("vector=0x13") __near_func __interrupt void UART0_RX_ISR(void)
   case 97:// 'a' key
     start = 1;//Start communication with WRS
     break;
-  case 107:
-    readCoefficients=1;//start reading coeffs from pressure sensor
-    break;
-  case 'Z': //an idea for getting ack from PC that it is done reading in all data -- since this does take some time..
-    ACK = 1;
-    break;
-  case UP_ARROW:
-    pTxData[0] = keyVal;
-    changePWMflag = 1; 
-    break;
-  case DOWN_ARROW:
-    pTxData[0] = keyVal;
-    changePWMflag = 1; 
-    break;
-  case LEFT_ARROW:
-    pTxData[0] = keyVal;
-    changePWMflag = 1; 
-    break;
-  case RIGHT_ARROW:
-    pTxData[0] = keyVal;
-    changePWMflag = 1; 
-    break;
+//  case 107:
+//    readCoefficients=1;//start reading coeffs from pressure sensor
+//    break;
+//  case 'Z': //an idea for getting ack from PC that it is done reading in all data -- since this does take some time..
+//    ACK = 1;
+//    break;
+//  case UP_ARROW:
+//    pTxData[0] = keyVal;
+//    changePWMflag = 1; 
+//    break;
+//  case DOWN_ARROW:
+//    pTxData[0] = keyVal;
+//    changePWMflag = 1; 
+//    break;
+//  case LEFT_ARROW:
+//    pTxData[0] = keyVal;
+//    changePWMflag = 1; 
+//    break;
+//  case RIGHT_ARROW:
+//    pTxData[0] = keyVal;
+//    changePWMflag = 1; 
+//    break;
   }
   IEN0 |= 0x80; //ENABLE INTERRUPTS GENERALLY
 }
