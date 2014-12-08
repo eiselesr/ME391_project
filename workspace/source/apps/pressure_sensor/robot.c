@@ -97,13 +97,20 @@ WIRELESS ROBOTIC SYSTEM FILE --- LOAD ONTO CC2530 RFB 743
 #define READ 0x80
 #define WRITE 0x00
 #define JUNK 0xAA
-#define CTRL_REG5_A 0x20
+#define CTRL_REG1_A 0x20
+#define CTRL_REG1_G 0x20
 #define OUT_X_L_A 0x28
 #define OUT_X_H_A 0x29
 #define OUT_Y_L_A 0x2A
 #define OUT_Y_H_A 0x2B
 #define OUT_Z_L_A 0x2C
 #define OUT_Z_H_A 0x2D
+#define OUT_X_L_G 0x28
+#define OUT_X_H_G 0x29
+#define OUT_Y_L_G 0x2A
+#define OUT_Y_H_G 0x2B
+#define OUT_Z_L_G 0x2C
+#define OUT_Z_H_G 0x2D
 
 #define UP_ARROW    72
 #define LEFT_ARROW  75
@@ -164,7 +171,7 @@ short y;
 short z;
 
 int value; // Value in which ADC conversion is stored.
-int counterPressure = 40;
+int counterPressure = 20;
 int counterIMU = 0;
 int spiPkg;
 int dongleActive = 0;
@@ -492,34 +499,61 @@ static void configureIMU()
   CS_A=1;
   CS_G=1;
   
-  spiTxBuffer[0] = CTRL_REG5_A; //WRITE DATA AT 0x20
-  spiTxBuffer[1] = 0x77; //[1001 -111] data rate to 1600hz and enable xyz axis
-  
-  CS_A = 0;
+  //Initialize accelerometer
+  spiTxBuffer[0] = CTRL_REG1_A; //WRITE DATA AT 0x20
+  //spiTxBuffer[1] = 0x77; //[1001 -111] data rate to 1600hz and enable xyz axis
+  spiTxBuffer[1] = 0xAF; 
+  CS_G = 0;
   for (int i = 0; i < 2; i++) 
   { 
     U1TX_BYTE = 0;
     U1DBUF = spiTxBuffer[i];  
     while (!U1TX_BYTE); 
   }      
-  CS_A = 1; 
+  CS_G = 1;
+    
+    //Initialize Gyro
+//  spiTxBuffer[0] = CTRL_REG1_G; //WRITE DATA AT 0x20
+//  spiTxBuffer[1] = 0xAF; //[1010 1111] data rate to 1600hz and enable xyz axis
+//  
+//  CS_G = 0;
+//  for (int i = 0; i < 2; i++) 
+//  { 
+//    U1TX_BYTE = 0;
+//    U1DBUF = spiTxBuffer[i];  
+//    while (!U1TX_BYTE); 
+//  }      
+//  CS_G = 1; 
+//  
+  
   
   //biasBuf[0] = 'C'; //Coefficient header
   //biasBuf[1] = 0; //Packet Number
   //biasBuf[2] = 1; //Packet Number
   for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
   {   
-    CS_A = 0;
+    CS_G = 0;
     U1TX_BYTE = 0;
     U1DBUF = (OUT_X_L_A + i) | READ;
     while(!U1TX_BYTE);    
     U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
     U1DBUF = JUNK;
     while (!U1TX_BYTE);    
-    CS_A =1;
+    CS_G =1;
     coeffBuf[i+35] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
-    
   }
+//  for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
+//  {   
+//    CS_G = 0;
+//    U1TX_BYTE = 0;
+//    U1DBUF = (OUT_X_L_G + i) | READ;
+//    while(!U1TX_BYTE);    
+//    U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
+//    U1DBUF = JUNK;
+//    while (!U1TX_BYTE);    
+//    CS_G =1;
+//    coeffBuf[i+42] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
+//  }
   
 }
 
@@ -529,16 +563,28 @@ static void configureIMU()
 static void readIMU() {
   for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
   {   
-    CS_A = 0;
+    CS_G = 0;
     U1TX_BYTE = 0;
     U1DBUF = (OUT_X_L_A + i) | READ;
     while(!U1TX_BYTE);    
     U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
     U1DBUF = JUNK;
     while (!U1TX_BYTE);    
-    CS_A =1;
+    CS_G =1;
     spiRxBuffer[i+20] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
-  }	 
+  }	
+//  for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
+//  {   
+//    CS_G = 0;
+//    U1TX_BYTE = 0;
+//    U1DBUF = (OUT_X_L_G + i) | READ;
+//    while(!U1TX_BYTE);    
+//    U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
+//    U1DBUF = JUNK;
+//    while (!U1TX_BYTE);    
+//    CS_G =1;
+//    spiRxBuffer[i+27] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
+//  }	 
   
 }
 
@@ -555,7 +601,7 @@ uint8 sendData()
   pTxData[1] = spiPkg/256;
   pTxData[2] = spiPkg%256;
   
-  for (int i=0;i<26;i++) {
+  for (int i=0;i<33;i++) {
     pTxData[i+3] = spiRxBuffer[i];
   }
   
@@ -600,11 +646,11 @@ _Pragma("vector=0x4B") __near_func __interrupt void LIGHTUP(void)
   //if motor counter < 1000, motorcounter=motorcounter+1;
   //if motorcounter=1000, set flag
   
-  if(counterPressure>=80){//Every 100 ms
+  if(counterPressure>=40){//Every 100 ms
     counterPressure=0;
     readPressureFlag = 1;
   }
-  if(counterIMU>=80){//Every 100ms
+  if(counterIMU>=40){//Every 100ms
     counterIMU=0;
     sendDataFlag=1;
   }
