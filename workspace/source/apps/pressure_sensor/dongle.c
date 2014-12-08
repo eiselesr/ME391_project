@@ -69,6 +69,7 @@ static uint8 pRxData[APP_PAYLOAD_LENGTH];
 
 static basicRfCfg_t basicRfConfig;
 int start = 0;
+int turnOnMotorFlag=0;
 uint8 readCoefficients = 0;
 uint8 bob;
 uint8 status = 0;//boolean
@@ -170,6 +171,12 @@ void main(void)
   
   while(TRUE)
   {
+    if(turnOnMotorFlag){
+      if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)//send command to WRS
+      {
+        turnOnMotorFlag=0;
+      }
+    }
     //Receive package from WRS
     if(basicRfPacketIsReady())
     { 
@@ -177,7 +184,7 @@ void main(void)
       if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, myRSSI)>0) {
         getRSSI = basicRfGetRssi();
         pRxData[104]=getRSSI;
-        if((pRxData[0] == 'P')||(pRxData[0] == 'A'))
+        if(pRxData[0] == 'D')//||(pRxData[0] == 'I'))
         {          
           //SEND DATA TO PC 
           for (unsigned int uartTxIndex = 0; uartTxIndex<105; uartTxIndex++)
@@ -212,16 +219,20 @@ _Pragma("vector=0x13") __near_func __interrupt void UART0_RX_ISR(void)
   case 97:// 'a' key
     start = 1;//Start communication with WRS
     break;
+//  case 98: //'b' key
+//    turnOnMotorFlag=1;
+//    pTxData[0] = keyVal;
+//    break;
 //  case 107:
 //    readCoefficients=1;//start reading coeffs from pressure sensor
 //    break;
 //  case 'Z': //an idea for getting ack from PC that it is done reading in all data -- since this does take some time..
 //    ACK = 1;
 //    break;
-//  case UP_ARROW:
-//    pTxData[0] = keyVal;
-//    changePWMflag = 1; 
-//    break;
+  case UP_ARROW:
+    pTxData[0] = keyVal;
+    turnOnMotorFlag = 1; 
+    break;
 //  case DOWN_ARROW:
 //    pTxData[0] = keyVal;
 //    changePWMflag = 1; 
