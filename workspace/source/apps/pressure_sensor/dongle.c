@@ -69,6 +69,8 @@ static uint8 pRxData[APP_PAYLOAD_LENGTH];
 
 static basicRfCfg_t basicRfConfig;
 int start = 0;
+int initFlag=1;
+int sendInitFlag=0;
 int turnOnMotorFlag=0;
 uint8 readCoefficients = 0;
 uint8 bob;
@@ -129,52 +131,78 @@ void main(void)
   configureUSART0forUART_ALT1();
   uartStartRxForIsr();
   
-  while(!start); //waiting for 'a' key from PC 
-  //respond to PC -- going to try to start up WRS 
-  
-  pTxData[0] = INIT_COMM_CMD;
-  basicRfReceiveOff();
-  if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)
-  {
-    state=1;
-  }
-  basicRfReceiveOn();
-  //wait for ACK from WRS
-  
-  pTxData[0] = INIT_COEF_CMD;
-  basicRfReceiveOff();
-  if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)
-  {
-    basicRfReceiveOn();
-    
-    //WAIT FOR COEFFICIENTS FROM WRS
-    while(!basicRfPacketIsReady());//wait to receive acknowledgement
-    
-    if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL)>0) 
-    {
-      if(pRxData[0] == 'C') 
-      {  
-        //Pass to PC
-        for (unsigned int uartTxIndex = 0; uartTxIndex<105; uartTxIndex++)
-        {
-          U0CSR &= ~0x02; //SET U0TX_BYTE to 0
-          U0DBUF = pRxData[uartTxIndex];      
-          while (!(U0CSR&0x02));
-        }
-      }    
-    }
-  }
-  
-  //finished sending coefficients to PC 
-  
-  basicRfReceiveOn();
   
   while(TRUE)
   {
+    //----------------------
+    // INITIALIZE
+    //----------------------
+    if(initFlag)
+    {
+      while(!start); //waiting for 'a' key from PC 
+      //respond to PC -- going to try to start up WRS 
+      start=0;
+      pTxData[0] = INIT_COMM_CMD;
+      basicRfReceiveOff();
+      if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)
+      {
+        state=1;
+      }
+      basicRfReceiveOn();
+      //wait for ACK from WRS
+      
+      pTxData[0] = INIT_COEF_CMD;
+      basicRfReceiveOff();
+      if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)
+      {
+        basicRfReceiveOn();
+        
+        //WAIT FOR COEFFICIENTS FROM WRS
+        while(!basicRfPacketIsReady());//wait to receive acknowledgement
+        
+        if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL)>0) 
+        {
+          if(pRxData[0] == 'C') 
+          {  
+            //Pass to PC
+            for (unsigned int uartTxIndex = 0; uartTxIndex<105; uartTxIndex++)
+            {
+              U0CSR &= ~0x02; //SET U0TX_BYTE to 0
+              U0DBUF = pRxData[uartTxIndex];      
+              while (!(U0CSR&0x02));
+            }
+          }    
+        }
+      }
+      
+      //finished sending coefficients to PC 
+      
+      basicRfReceiveOn();
+      initFlag=0;
+    }
+    
+    
+    
     if(turnOnMotorFlag){
       if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)//send command to WRS
       {
         turnOnMotorFlag=0;
+      }
+    }
+    
+    if(sendInitFlag){
+      if(basicRfSendPacket(ROBOT_ADDR, pTxData, APP_PAYLOAD_LENGTH)==SUCCESS)//send command to WRS
+      {
+        initFlag=1;
+        sendInitFlag=0;
+        //Pass to PC
+        for (unsigned int uartTxIndex = 0; uartTxIndex<105; uartTxIndex++)
+        {
+          pRxData[0] == 'R';
+          U0CSR &= ~0x02; //SET U0TX_BYTE to 0
+          U0DBUF = pRxData[uartTxIndex];      
+          while (!(U0CSR&0x02));
+        }
       }
     }
     //Receive package from WRS
@@ -219,32 +247,32 @@ _Pragma("vector=0x13") __near_func __interrupt void UART0_RX_ISR(void)
   case 97:// 'a' key
     start = 1;//Start communication with WRS
     break;
-//  case 98: //'b' key
-//    turnOnMotorFlag=1;
-//    pTxData[0] = keyVal;
-//    break;
-//  case 107:
-//    readCoefficients=1;//start reading coeffs from pressure sensor
-//    break;
-//  case 'Z': //an idea for getting ack from PC that it is done reading in all data -- since this does take some time..
-//    ACK = 1;
-//    break;
+    //  case 98: //'b' key
+    //    turnOnMotorFlag=1;
+    //    pTxData[0] = keyVal;
+    //    break;
+    //  case 107:
+    //    readCoefficients=1;//start reading coeffs from pressure sensor
+    //    break;
+    //  case 'Z': //an idea for getting ack from PC that it is done reading in all data -- since this does take some time..
+    //    ACK = 1;
+    //    break;
   case UP_ARROW:
     pTxData[0] = keyVal;
     turnOnMotorFlag = 1; 
     break;
-//  case DOWN_ARROW:
-//    pTxData[0] = keyVal;
-//    changePWMflag = 1; 
-//    break;
-//  case LEFT_ARROW:
-//    pTxData[0] = keyVal;
-//    changePWMflag = 1; 
-//    break;
-//  case RIGHT_ARROW:
-//    pTxData[0] = keyVal;
-//    changePWMflag = 1; 
-//    break;
+  case DOWN_ARROW:
+    pTxData[0] = keyVal;
+    sendInitFlag = 1; 
+    break;
+    //  case LEFT_ARROW:
+    //    pTxData[0] = keyVal;
+    //    changePWMflag = 1; 
+    //    break;
+    //  case RIGHT_ARROW:
+    //    pTxData[0] = keyVal;
+    //    changePWMflag = 1; 
+    //    break;
   }
   IEN0 |= 0x80; //ENABLE INTERRUPTS GENERALLY
 }

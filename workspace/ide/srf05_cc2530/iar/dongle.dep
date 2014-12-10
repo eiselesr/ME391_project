@@ -92,6 +92,7 @@
       <file>$PROJ_DIR$\..\..\..\source\Components\common\cc8051\hal_cc8051.h</file>
       <file>$PROJ_DIR$\..\..\..\source\Components\basicrf\basic_rf.h</file>
       <file>$PROJ_DIR$\temp\light_switch\adc.pbi</file>
+      <file>$PROJ_DIR$\..\..\..\source\apps\pressure_sensor\robot.c</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\..\..\source\Components\radios\cc2530\hal_mcu.c</name>

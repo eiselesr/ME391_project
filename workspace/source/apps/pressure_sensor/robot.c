@@ -171,7 +171,8 @@ short y;
 short z;
 
 int value; // Value in which ADC conversion is stored.
-int counterPressure = 20;
+int initFlag=1;
+int counterPressure = 40;
 int counterIMU = 0;
 int spiPkg;
 int dongleActive = 0;
@@ -208,56 +209,59 @@ _Pragma("vector=0x4B") __near_func __interrupt void LIGHTUP(void);
 /////////////////////////////////////////////////////////////////////////
 void main(void)
 {
-  configureStuff();  
-  basicRfSetUp();
-  if(halRfInit()==FAILED) {
-    HAL_ASSERT(FALSE);
-  }
-  halMcuWaitMs(350);
-  configurePressure();
-  configureIMU();
-  //turnOnMotor();
-  
-  basicRfReceiveOn();
-  
-  while(!basicRfPacketIsReady()); //WAITING FOR  INIT COMM CMD
-  
-  if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL)>0) 
-  {
-    if(pRxData[0] == INIT_COMM_CMD) 
-    {        
-      IEN0 |= 0x80; //[1--- ----] Allow interrupts
-      IEN1 |= 0x02; //[---- --1-] Enable Timer 1 interrupt
-    }
-  }
-  
-  while(!basicRfPacketIsReady()); 
-  
-  if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL)>0) //WAITING FOR CMD TO SEND COEFFS
-  {
-    if(pRxData[0] == INIT_CONTDATA_CMD)
-    {
-      basicRfReceiveOff();
-      basicRfSendPacket(DONGLE_ADDR, coeffBuf, 105);
+  while(TRUE){   
+    if(initFlag){
+      configureStuff();  
+      basicRfSetUp();
+      if(halRfInit()==FAILED) {
+        HAL_ASSERT(FALSE);
+      }
+      halMcuWaitMs(350);
+      configurePressure();
+      configureIMU();
+      //turnOnMotor();
       
       basicRfReceiveOn();
-      //IEN1 |= 0x02; //[---- --1-] Enable Timer 1 interrupt <- Probably won't use
+      
+      while(!basicRfPacketIsReady()); //WAITING FOR  INIT COMM CMD
+      
+      if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL)>0) 
+      {
+        if(pRxData[0] == INIT_COMM_CMD) 
+        {        
+          IEN0 |= 0x80; //[1--- ----] Allow interrupts
+          IEN1 |= 0x02; //[---- --1-] Enable Timer 1 interrupt
+        }
+      }
+      
+      while(!basicRfPacketIsReady()); 
+      
+      if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL)>0) //WAITING FOR CMD TO SEND COEFFS
+      {
+        if(pRxData[0] == INIT_CONTDATA_CMD)
+        {
+          basicRfReceiveOff();
+          basicRfSendPacket(DONGLE_ADDR, coeffBuf, 105);
+          
+          basicRfReceiveOn();
+          //IEN1 |= 0x02; //[---- --1-] Enable Timer 1 interrupt <- Probably won't use
+        }
+      }
+      initFlag=0;
     }
-  }
-  
-  
-  //ENTERS WITH BASIC RF RECEIVE ON 
-  
-  //MAIN LOOP -- SENDS PRESSURE and ADC data and WAIT FOR CMDS to change pulse widths
-  while(TRUE)
-  {   
+    
+    
+    //ENTERS WITH BASIC RF RECEIVE ON 
+    //---------------------------------------------------------------
+    //MAIN LOOP -- SENDS PRESSURE and IMU data
+    //----------------------------------------------------------------
     //Get RSSI
     if(RSSISTAT & 0x01){
       rssiPow = RSSI - OFFSET;
     }
     //read pressure data
     if(readPressureFlag == 1 && !basicRfPacketIsReady())
-    //if(readPressureFlag == 1)
+      //if(readPressureFlag == 1)
     {
       //basicRfReceiveOff();      
       readPressure();
@@ -266,18 +270,12 @@ void main(void)
       //basicRfReceiveOn();
     }  
     if(sendDataFlag == 1 && !basicRfPacketIsReady())
-    //if(sendDataFlag == 1)
+      //if(sendDataFlag == 1)
     {
       readIMU();
       sendData();
       sendDataFlag = 0;
     }
-    
-//    if(turnOnMotorFlag == 1 && !basicRfPacketIsReady())
-//    {
-//      turnOnMotor();
-//    }
-    
     
     if(basicRfPacketIsReady())
     {
@@ -287,11 +285,11 @@ void main(void)
         if(pRxData[0]==UP_ARROW){
           turnOnMotor();
         }
+        if(pRxData[0]==DOWN_ARROW){
+          initFlag=1;
+        }
       }
     }
-    
-    
-    
   }
 }
 
@@ -352,11 +350,6 @@ static void configurePressure()
   //int *CS;
   
   for(int sensorNum=0; sensorNum<numPressureSensors;sensorNum++){
-    // CS = CS_1  -- make CS point to the current sensors chip select so in loop correct pin is set high/low
-    //CS = CSBuff[i];=
-    //CS = &CS_1;
-    //   *CS = 1;
-    
     
     //Read coefficients
     //CS_1 = 0;
@@ -376,7 +369,7 @@ static void configurePressure()
     } 
     turnOnCS(sensorNum);
     //CS_1 = 1;
-
+    
   }
 }
 //-----------------------------------------
@@ -398,62 +391,63 @@ static void readPressure()
   spiTxBuffer[4] = 0x00;
   
   //for(int sensorNum=0; sensorNum<numPressureSensors;sensorNum++){
-    
-    //Pressure Sensor #1
-    //CS = *CS_1
-    //CS = 1;
-    
-    
-    //turnOffCS(sensorNum);
-    //CS_1=0;
-    //Start Measuring Pressure
-    //    U1TX_BYTE = 0;
-    //    U1DBUF = START;
-    //    while(!U1TX_BYTE);    
-    //    
-    //    U1TX_BYTE = 0; 
-    //    U1DBUF = 0x00;
-    //    while (!U1TX_BYTE);    
-    //    turnOnCS(sensorNum);
-    //CS_1=1;
-    
-    //halMcuWaitMs(3);//Wait for conversion
-    
-    //Read coefficients
-    
-    
-    //CS_1= 0;
-    turnOffCS(sensorNum);
-    for(int i=0; i<5; i++)
-    {
-      U1TX_BYTE = 0;
-      U1DBUF = spiTxBuffer[i];
-      while(!U1TX_BYTE);    
-      
-      U1TX_BYTE = 0; 
-      U1DBUF = 0x00;
-      while (!U1TX_BYTE);    
-      spiRxBuffer[i+5*sensorNum] = U1DBUF;
-      //spiRxBuffer_Pressure[i] = U1DBUF;
-      
-    }
-    turnOnCS(sensorNum);
-    //CS_1 = 1;
-    turnOffCS(sensorNum);
+  
+  //Pressure Sensor #1
+  //CS = *CS_1
+  //CS = 1;
+  
+  
+  //turnOffCS(sensorNum);
+  //CS_1=0;
+  //Start Measuring Pressure
+  //    U1TX_BYTE = 0;
+  //    U1DBUF = START;
+  //    while(!U1TX_BYTE);    
+  //    
+  //    U1TX_BYTE = 0; 
+  //    U1DBUF = 0x00;
+  //    while (!U1TX_BYTE);    
+  //    turnOnCS(sensorNum);
+  //CS_1=1;
+  
+  //halMcuWaitMs(3);//Wait for conversion
+  
+  //Read coefficients
+  
+  
+  //CS_1= 0;
+  
+  
+  turnOffCS(sensorNum);
+  for(int i=0; i<5; i++)
+  {
     U1TX_BYTE = 0;
-    U1DBUF = START;
+    U1DBUF = spiTxBuffer[i];
     while(!U1TX_BYTE);    
     
     U1TX_BYTE = 0; 
     U1DBUF = 0x00;
     while (!U1TX_BYTE);    
-    turnOnCS(sensorNum);
-    sensorNum++;
-    if(sensorNum>=4)
-    {
-      sensorNum=0;
-    }
+    spiRxBuffer[i+5*sensorNum] = U1DBUF;
+    //spiRxBuffer_Pressure[i] = U1DBUF;
     
+  }
+  turnOnCS(sensorNum);
+  //CS_1 = 1;
+  turnOffCS(sensorNum);
+  U1TX_BYTE = 0;
+  U1DBUF = START;
+  while(!U1TX_BYTE);    
+  
+  U1TX_BYTE = 0; 
+  U1DBUF = 0x00;
+  while (!U1TX_BYTE);    
+  turnOnCS(sensorNum);
+  sensorNum++;
+  if(sensorNum>=4)
+  {
+    sensorNum=0;    }
+  
   //}//end iterating loop
 }
 
@@ -462,10 +456,10 @@ static void readPressure()
 //-----------------------------------------
 uint8 sendPressure()
 {  
-//  uint8 status = FAILED;// FAILED = 1
-//  pTxData[0] = 'P'; //P => Pressure data
-//  pTxData[1] = spiPkg/256;
-//  pTxData[2] = spiPkg%256;
+  //  uint8 status = FAILED;// FAILED = 1
+  //  pTxData[0] = 'P'; //P => Pressure data
+  //  pTxData[1] = spiPkg/256;
+  //  pTxData[2] = spiPkg%256;
   for(int sensorNum=0; sensorNum<numPressureSensors; sensorNum++){
     
     pTxData[3+sensorNum*4] = spiRxBuffer_Pressure[0+sensorNum*4];
@@ -479,12 +473,12 @@ uint8 sendPressure()
   }
   //pTxData[102] = rssiPow;
   
-//  status = basicRfSendPacket(DONGLE_ADDR, pTxData, APP_PAYLOAD_LENGTH);
-//  spiPkg++;
-//  if(status == SUCCESS){
-//    //  break;
-//  }
-//  return status;  
+  //  status = basicRfSendPacket(DONGLE_ADDR, pTxData, APP_PAYLOAD_LENGTH);
+  //  spiPkg++;
+  //  if(status == SUCCESS){
+  //    //  break;
+  //  }
+  //  return status;  
 }
 
 //-------------------------------------------
@@ -500,7 +494,7 @@ static void configureIMU()
   CS_G=1;
   
   //Initialize accelerometer
-  spiTxBuffer[0] = CTRL_REG1_A; //WRITE DATA AT 0x20
+  spiTxBuffer[0] = CTRL_REG1_G; //WRITE DATA AT 0x20
   //spiTxBuffer[1] = 0x77; //[1001 -111] data rate to 1600hz and enable xyz axis
   spiTxBuffer[1] = 0xAF; 
   CS_G = 0;
@@ -511,20 +505,20 @@ static void configureIMU()
     while (!U1TX_BYTE); 
   }      
   CS_G = 1;
-    
-    //Initialize Gyro
-//  spiTxBuffer[0] = CTRL_REG1_G; //WRITE DATA AT 0x20
-//  spiTxBuffer[1] = 0xAF; //[1010 1111] data rate to 1600hz and enable xyz axis
-//  
-//  CS_G = 0;
-//  for (int i = 0; i < 2; i++) 
-//  { 
-//    U1TX_BYTE = 0;
-//    U1DBUF = spiTxBuffer[i];  
-//    while (!U1TX_BYTE); 
-//  }      
-//  CS_G = 1; 
-//  
+  
+  //Initialize Gyro
+  //  spiTxBuffer[0] = CTRL_REG1_G; //WRITE DATA AT 0x20
+  //  spiTxBuffer[1] = 0xAF; //[1010 1111] data rate to 1600hz and enable xyz axis
+  //  
+  //  CS_G = 0;
+  //  for (int i = 0; i < 2; i++) 
+  //  { 
+  //    U1TX_BYTE = 0;
+  //    U1DBUF = spiTxBuffer[i];  
+  //    while (!U1TX_BYTE); 
+  //  }      
+  //  CS_G = 1; 
+  //  
   
   
   //biasBuf[0] = 'C'; //Coefficient header
@@ -534,7 +528,7 @@ static void configureIMU()
   {   
     CS_G = 0;
     U1TX_BYTE = 0;
-    U1DBUF = (OUT_X_L_A + i) | READ;
+    U1DBUF = (OUT_X_L_G + i) | READ;
     while(!U1TX_BYTE);    
     U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
     U1DBUF = JUNK;
@@ -542,18 +536,18 @@ static void configureIMU()
     CS_G =1;
     coeffBuf[i+35] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
   }
-//  for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
-//  {   
-//    CS_G = 0;
-//    U1TX_BYTE = 0;
-//    U1DBUF = (OUT_X_L_G + i) | READ;
-//    while(!U1TX_BYTE);    
-//    U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
-//    U1DBUF = JUNK;
-//    while (!U1TX_BYTE);    
-//    CS_G =1;
-//    coeffBuf[i+42] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
-//  }
+  //  for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
+  //  {   
+  //    CS_G = 0;
+  //    U1TX_BYTE = 0;
+  //    U1DBUF = (OUT_X_L_G + i) | READ;
+  //    while(!U1TX_BYTE);    
+  //    U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
+  //    U1DBUF = JUNK;
+  //    while (!U1TX_BYTE);    
+  //    CS_G =1;
+  //    coeffBuf[i+42] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
+  //  }
   
 }
 
@@ -565,7 +559,7 @@ static void readIMU() {
   {   
     CS_G = 0;
     U1TX_BYTE = 0;
-    U1DBUF = (OUT_X_L_A + i) | READ;
+    U1DBUF = (OUT_X_L_G + i) | READ;
     while(!U1TX_BYTE);    
     U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
     U1DBUF = JUNK;
@@ -573,18 +567,18 @@ static void readIMU() {
     CS_G =1;
     spiRxBuffer[i+20] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
   }	
-//  for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
-//  {   
-//    CS_G = 0;
-//    U1TX_BYTE = 0;
-//    U1DBUF = (OUT_X_L_G + i) | READ;
-//    while(!U1TX_BYTE);    
-//    U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
-//    U1DBUF = JUNK;
-//    while (!U1TX_BYTE);    
-//    CS_G =1;
-//    spiRxBuffer[i+27] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
-//  }	 
+  //  for(int i=0; i<7; i++)//READ EXTRA BIT. LAST ONE IS JUNK TO FLUSH OUT NEEDED BITS
+  //  {   
+  //    CS_G = 0;
+  //    U1TX_BYTE = 0;
+  //    U1DBUF = (OUT_X_L_G + i) | READ;
+  //    while(!U1TX_BYTE);    
+  //    U1TX_BYTE = 0; //NOT SURE IF THIS IS NEEDED OR NOT
+  //    U1DBUF = JUNK;
+  //    while (!U1TX_BYTE);    
+  //    CS_G =1;
+  //    spiRxBuffer[i+27] = U1DBUF;// START FROM 0 with a junk bit or 1 if bit is good.     
+  //  }	 
   
 }
 
@@ -646,11 +640,11 @@ _Pragma("vector=0x4B") __near_func __interrupt void LIGHTUP(void)
   //if motor counter < 1000, motorcounter=motorcounter+1;
   //if motorcounter=1000, set flag
   
-  if(counterPressure>=40){//Every 100 ms
+  if(counterPressure>=80){//Every 100 ms
     counterPressure=0;
     readPressureFlag = 1;
   }
-  if(counterIMU>=40){//Every 100ms
+  if(counterIMU>=80){//Every 100ms
     counterIMU=0;
     sendDataFlag=1;
   }
